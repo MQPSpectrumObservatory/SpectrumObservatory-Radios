@@ -1,14 +1,15 @@
 import socket
-import tqdm
 import os
 
 # device's ip
-SERVER_HOST = "192.168.1.9"
+SERVER_HOST = "localhost"
 SERVER_PORT = 8080
 
 SEPARATOR = "<SEPARATOR>"
 BUFFER_SIZE = 4096
 
+
+## setup websocket
 #create the server socket
 s = socket.socket()
 
@@ -40,10 +41,8 @@ filesize = int(filesize)
 
 
 ## start receiving the file
-progress = tqdm.tqdm(range(filesize), f"Receiving {filename}", unit="B", unit_scale=True, unit_divisor=1024)
-
 with open(filename, "wb") as f:
-    for _ in progress:
+    while(True):
         # read 1024 bytes from the socket (receive)
         bytes_read = client_socket.recv(BUFFER_SIZE)
 
@@ -54,9 +53,6 @@ with open(filename, "wb") as f:
         
         # write to the file the bytes we just received
         f.write(bytes_read)
-
-        # update the progress bar
-        progress.update(len(bytes_read))
 
 
 ## close the sockets
