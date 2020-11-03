@@ -10,7 +10,6 @@ port = 8080          # ws port is typically port 80
 
 # the name and file being sent over the socket
 filename = input("Enter the name of the file to transfer:")
-filesize = os.path.getsize(filename)
 
 # create the client socket
 s = socket.socket()
@@ -21,7 +20,7 @@ s.connect((host, port))
 print("[+] Connected")
 
 # send the filename and filesize
-s.send(f"{filename}{SEPARATOR}{filesize}".encode())
+s.send(f"{filename}".encode())
 
 # start sending the file
 with open(filename, "rb") as f:

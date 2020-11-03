@@ -30,14 +30,10 @@ print(f"[+] {address} is connected")
 
 ## receive the file infos
 # receive using client socket, not server socket
-received = client_socket.recv(BUFFER_SIZE).decode()
-filename, filesize = received.split(SEPARATOR)
+filename = client_socket.recv(BUFFER_SIZE).decode()
 
 #remove absolute path if there is one
 filename = os.path.basename(filename)
-
-#convert to int
-filesize = int(filesize)
 
 
 ## start receiving the file
