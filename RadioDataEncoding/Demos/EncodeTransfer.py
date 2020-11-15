@@ -37,7 +37,7 @@ def main():
         json.dump(jsonFormat, outfile, indent=4)
 
     # Send this JSON file to the WebServer over a websocket connection
-    s.send(f"{JSONNAME}".encode())
+    # s.send(f"{JSONNAME}".encode()) ** We do not need to send the file name
 
     with open(JSONNAME, "rb") as f:
         while(True):
@@ -48,8 +48,8 @@ def main():
 
             s.sendall(bytesRead)
 
+    ## Clean up; close socket and remove json file
     s.close()
-
     os.remove(JSONNAME)
     
 if __name__ == '__main__':
