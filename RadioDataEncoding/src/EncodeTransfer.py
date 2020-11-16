@@ -9,7 +9,11 @@ from time import sleep
 
 
 BUFFER_SIZE = 4096  # send BUFFER_SIZE bytes each time step
+<<<<<<< HEAD
 HOST = "localhost"  # host of webserver (spectrumobservatory.wpi.edu)
+=======
+HOST = "192.168.1.9"  # host of webserver (spectrumobservatory.wpi.edu)
+>>>>>>> 07eeec1042fda70fd1930ca32358bc6bfadc2825
 PORT = 8080         # port the server is listening on (80)
 
 BINNAME  = "sample.dat"     # name of the input file  TODO: standardize
