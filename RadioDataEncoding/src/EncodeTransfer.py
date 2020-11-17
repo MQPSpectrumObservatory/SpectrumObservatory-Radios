@@ -10,7 +10,7 @@ import time     # Program sleep
 
 # Constants
 BUFFER_SIZE = 4096  # send BUFFER_SIZE bytes each time step
-HOST = "localhost"  # host of webserver (spectrumobservatory.wpi.edu)
+HOST = "192.168.1.9"  # host of webserver (spectrumobservatory.wpi.edu)
 PORT = 8080         # port the server is listening on (80)
 
 BINNAME  = "sample.dat"     # name of the input file  TODO: standardize
@@ -36,6 +36,9 @@ def term():
 def main():
     s = init()
 
+    rx_time     = 1
+    sampleRate  = 10000
+    radio       = 1
 
     ## Main loop: 
     # 1. Read GNURadio output file
@@ -47,9 +50,6 @@ def main():
     while(True):
         ## Read in bin file (in demo the headers will be prompted for user input)
         # TODO: replace this with proper header parsing from bin file
-        rx_time     = 1
-        sampleRate  = 10000
-        radio       = 1
 
         ## Encode data payload from bin file into base64 ascii characters
         # TODO: is this as simple as opening a file and reading? (Earlier parsing can split the headers into a seperate file?)
@@ -82,5 +82,5 @@ def main():
         
     # TODO: add some sort of handling for signal interupts? (Safely terminate while process is running in background)
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()
