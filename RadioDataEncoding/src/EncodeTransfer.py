@@ -9,32 +9,36 @@ import sys      # Reading program arguments
 import time     # Program sleep
 
 # Constants
-BUFFER_SIZE = 4096  # send BUFFER_SIZE bytes each time step
+BUFFER_SIZE = 4096    # send BUFFER_SIZE bytes each time step
 HOST = "192.168.1.9"  # host of webserver (spectrumobservatory.wpi.edu)
-PORT = 8080         # port the server is listening on (80)
+PORT = 8080           # port the server is listening on (80)
 
-BINNAME  = "sample.dat"     # name of the input file  TODO: standardize
-JSONNAME = "sample.json"    # name of file being sent TODO: standardize
+BINNAME  = "sample.dat"     # name of the input file  TODO: match GNURadio
+JSONNAME = "sample.json"    # name of file being sent
 
 
 # This is called once at the start of the program's execution
 # Returns: the websocket descriptor
 def init():
     # Setup websocket
+    global s
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((HOST, PORT))
-    return s
+    print("[*] Connected to Server")
+    return None
 
 
 # This will be called if the program recieves a SIGTERM signal
 # This closes the websocket and handles anyother necessary cleanup
-def term():
-    return None
+def term(signum, frame):
+    print(f"Signal number {signum} received")
+    print("Terminating the program")
+    s.close()
+    exit(1)
 
 
 # Main parent function
 def main():
-    s = init()
 
     rx_time     = 1
     sampleRate  = 10000
@@ -52,7 +56,6 @@ def main():
         # TODO: replace this with proper header parsing from bin file
 
         ## Encode data payload from bin file into base64 ascii characters
-        # TODO: is this as simple as opening a file and reading? (Earlier parsing can split the headers into a seperate file?)
         inputFile   = open(BINNAME, "rb")
         inputBinary = inputFile.read()
         encodedData = (base64.b64encode(inputBinary)).decode('ascii')
@@ -71,16 +74,11 @@ def main():
                     break
 
                 s.sendall(bytesRead)
+        os.remove(JSONNAME)     # remove the transmitted json file
 
         ## Wait and repeat process
         rx_time = rx_time + 5   # temporary time increment (the header parsing will update this)
-        os.remove(JSONNAME)     # remove the transmitted json file
-
-        # Wait to send next file (TODO: does this program need to do anything else in the meanwhile?)
-        print(f"[+] Sleeping for 5 seconds")
-        time.sleep(5) # TODO: this sleep amount will change based on GNURadio file creation timing
         
-    # TODO: add some sort of handling for signal interupts? (Safely terminate while process is running in background)
-
-# if __name__ == '__main__':
-#     main()
+        # Wait to send next file (TODO: does this program need to do anything else in the meanwhile?)
+        print("[+] Sleeping for 5 seconds")
+        time.sleep(5) # TODO: this sleep amount will change based on GNURadio file creation timing
