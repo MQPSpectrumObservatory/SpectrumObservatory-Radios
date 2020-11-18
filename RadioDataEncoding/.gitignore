@@ -1,2 +1,10 @@
 # Byte-compiled files
 __pycache__/
+
+# System Files
+WSDaemon.log
+WSDaemon.pid
+
+# Specific Test Files
+src/sample.dat
+src/sample.json
