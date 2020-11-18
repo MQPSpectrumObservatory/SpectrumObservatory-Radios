@@ -4,9 +4,12 @@
 import base64   # Encoding binary data
 import json     # Creating JSON file
 import os       # File path manipluation
+import pmt      # GNURadio header parsing
 import socket   # Creating websocket
 import sys      # Reading program arguments
 import time     # Program sleep
+
+from gnuradio.blocks import parse_file_metadata
 
 # Constants
 BUFFER_SIZE = 4096    # send BUFFER_SIZE bytes each time step
@@ -29,7 +32,7 @@ def init():
 
 
 # This will be called if the program recieves a SIGTERM signal
-# This closes the websocket and handles anyother necessary cleanup
+# This closes the websocket and handles any other necessary cleanup
 def term(signum, frame):
     print(f"Signal number {signum} received")
     print("Terminating the program")
@@ -40,6 +43,7 @@ def term(signum, frame):
 # Main parent function
 def main():
 
+    # TODO: temp values for the header fields
     rx_time     = 1
     sampleRate  = 10000
     radio       = 1
@@ -70,6 +74,7 @@ def main():
             while(True):
                 bytesRead = f.read(BUFFER_SIZE)
 
+                # If no bytes were read in, EOF
                 if not bytesRead:
                     break
 
@@ -77,8 +82,8 @@ def main():
         os.remove(JSONNAME)     # remove the transmitted json file
 
         ## Wait and repeat process
-        rx_time = rx_time + 5   # temporary time increment (the header parsing will update this)
+        rx_time = rx_time + 5   # temporary time header increment
         
         # Wait to send next file (TODO: does this program need to do anything else in the meanwhile?)
         print("[+] Sleeping for 5 seconds")
-        time.sleep(5) # TODO: this sleep amount will change based on GNURadio file creation timing
+        time.sleep(5) # TODO: sleep interval related to GNURadio file creation
