@@ -12,9 +12,9 @@ import time     # Program sleep
 from gnuradio.blocks import parse_file_metadata
 
 # Constants
-BUFFER_SIZE = 4096    # send BUFFER_SIZE bytes each time step
-HOST = "192.168.1.9"  # host of webserver (spectrumobservatory.wpi.edu)
-PORT = 8080           # port the server is listening on (80)
+BUFFER_SIZE = 4096                      # send BUFFER_SIZE bytes each time step
+HOST = "spectrumobservatory.wpi.edu"    # host of webserver
+PORT = 5000                             # port the server is listening on
 
 BINNAME  = "sample.dat"     # name of the input file  TODO: match GNURadio
 JSONNAME = "sample.json"    # name of file being sent
@@ -49,13 +49,17 @@ def main():
     radio       = 1
 
     ## Main loop: 
+    # 0. Reconnect to socket (possible temporary measure)
     # 1. Read GNURadio output file
     # 2. Parse header info
     # 3. Encode payload
     # 4. Create JSON
     # 5. Send JSON
-    # 6. Wait and repeat
+    # 6. Disconnect, wait, and repeat
     while(True):
+        ## Create socket and connect to server
+        init()
+
         ## Read in bin file (in demo the headers will be prompted for user input)
         # TODO: replace this with proper header parsing from bin file
 
@@ -81,9 +85,11 @@ def main():
                 s.sendall(bytesRead)
         os.remove(JSONNAME)     # remove the transmitted json file
 
-        ## Wait and repeat process
+        ## Close, wait, and repeat process
         rx_time = rx_time + 5   # temporary time header increment
         
+        s.close()
+
         # Wait to send next file (TODO: does this program need to do anything else in the meanwhile?)
         print("[+] Sleeping for 5 seconds")
         time.sleep(5) # TODO: sleep interval related to GNURadio file creation
