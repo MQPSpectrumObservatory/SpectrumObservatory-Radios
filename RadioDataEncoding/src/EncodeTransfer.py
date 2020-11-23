@@ -1,19 +1,19 @@
 #!/usr/bin/python3
 
 # Imports
-import base64       # Encoding binary data
-import json         # Creating JSON file
-import os           # File path manipluation
-import pmt          # GNURadio header parsing
-import sys          # Reading program arguments
-import time         # Program sleep
-import websocket    # Web Socket Libray
+import base64   # Encoding binary data
+import json     # Creating JSON file
+import os       # File path manipluation
+import pmt      # GNURadio header parsing
+import socket   # Creating websocket
+import sys      # Reading program arguments
+import time     # Program sleep
 
 from gnuradio.blocks import parse_file_metadata
 
 # Constants
 BUFFER_SIZE = 4096    # send BUFFER_SIZE bytes each time step
-HOST = "localhost"    # host of webserver (spectrumobservatory.wpi.edu)
+HOST = "192.168.1.9"  # host of webserver (spectrumobservatory.wpi.edu)
 PORT = 8080           # port the server is listening on (80)
 
 BINNAME  = "sample.dat"     # name of the input file  TODO: match GNURadio
@@ -25,7 +25,9 @@ JSONNAME = "sample.json"    # name of file being sent
 def init():
     # Setup websocket
     global s
-    s = websocket.create_connection(f"ws://{HOST}:{PORT}")
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((HOST, PORT))
+    print("[*] Connected to Server")
     return None
 
 
@@ -69,9 +71,14 @@ def main():
 
         ## Send this JSON file to the WebServer over a websocket connection
         with open(JSONNAME, "rb") as f:
-            bytesRead = f.read()
-            s.send(bytesRead)
+            while(True):
+                bytesRead = f.read(BUFFER_SIZE)
 
+                # If no bytes were read in, EOF
+                if not bytesRead:
+                    break
+
+                s.sendall(bytesRead)
         os.remove(JSONNAME)     # remove the transmitted json file
 
         ## Wait and repeat process
