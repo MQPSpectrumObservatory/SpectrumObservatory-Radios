@@ -6,7 +6,6 @@ import daemon.pidfile   # Creating daemon pid file
 import signal           # Kernel signal handling
 
 from EncodeTransfer import (
-    init,
     term,
     main
 ) # Transfer script
