@@ -6,6 +6,4 @@ WSDaemon.log
 WSDaemon.pid
 
 # Specific Test Files
-src/sample.dat
-src/small.dat
 src/sample.json
