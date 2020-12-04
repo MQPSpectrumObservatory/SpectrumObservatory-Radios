@@ -11,7 +11,7 @@ from EncodeTransfer import (
 ) # Transfer script
 
 # Constants
-WORKDIR = '/home/jrmurphy/dev/MQP/SpectrumObservatory-Radios/RadioDataEncoding/src'
+WORKDIR = '/home/radios/SpectrumObservatory-Radios/RadioDataEncoding/src'
 LOG = WORKDIR + '/WSDaemon.log'
 PID = WORKDIR + '/WSDaemon.pid'
 

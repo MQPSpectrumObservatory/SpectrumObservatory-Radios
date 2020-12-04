@@ -13,7 +13,7 @@ import time     # Program sleep
 
 
 ## Constants (!! CHANGE THESE TO REDIRECT TRAFFIC !!)
-HOST = "http://spectrumobservatory.wpi.edu" # host of webserver
+HOST = "http://spectrumobservatory.wpi.edu:5000/data" # host of webserver
 PORT = 5000                                 # port the server is listening on (should be 80)
 BINNAME  = "sample.dat"                     # name of the input file  TODO: match GNURadio
 HEADERS = {'Content-type': 'application/json', 'Accept': 'text/plain'}  # Headers for POST request
