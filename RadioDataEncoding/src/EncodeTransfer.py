@@ -4,43 +4,75 @@
 import base64   # Encoding binary data
 import json     # Creating JSON file
 import os       # File path manipluation
-# import pmt      # GNURadio header parsing
+import pmt      # GNURadio header parsing
 import requests # Creating HTTP requests
 import sys      # Reading program arguments
 import time     # Program sleep
 
-# from gnuradio.blocks import parse_file_metadata
+from gnuradio.blocks import parse_file_metadata # GNURadio header parsing
 
+## Constants
+HOST        = "http://spectrumobservatory.wpi.edu:5000/data"               # host of webserver
+BINNAME     = "sample_header.dat"                                          # name of the input file
+HEADERS     = {'Content-type': 'application/json', 'Accept': 'text/plain'} # Headers for POST request
+NITEMS      = 1000000                                                      # Number of samples per header (match to GNURadio)
 
-## Constants (!! CHANGE THESE TO REDIRECT TRAFFIC !!)
-HOST = "http://spectrumobservatory.wpi.edu:5000/data" # host of webserver
-PORT = 5000                                 # port the server is listening on (should be 80)
-BINNAME  = "sample.dat"                     # name of the input file  TODO: match GNURadio
-HEADERS = {'Content-type': 'application/json', 'Accept': 'text/plain'}  # Headers for POST request
-
-# Test Constants
-TEST = 0 # If this variable equals 1, use test server and file (TODO: remove for production!)
+# Test Constants -> (points to local test server)
+TEST = 0
 if(TEST):
-    HOST = 'http://ptsv2.com/t/aubib-1606831780/post'
-    BINNAME = 'small.dat'
-    # http://ptsv2.com/t/aubib-1606831780 go to this address to see test dumps (limited to 1.5KB)
+    HOST = 'http://localhost:3000/data'
+    BINNAME = 'sample_header.dat'
 
 
-## This will be called if the program recieves a SIGTERM signal
+## Called if the program recieves a SIGTERM signal # NOTE: Invoked by daemon
 # This handles any necessary cleanup
 def term(signum, frame):
-    print(f"Signal number {signum} received")
-    print("Terminating the program")
+    print(f"[o] Signal number {signum} received")
+    print("[o] Terminating the program")
     exit(1)
+
+
+## This will be called to parse header data out of the dat file
+# Takes in an open file descriptor and returns a python dictionary
+def parseHeaders(file):
+
+    # read out header bytes into a string
+    header_str = file.read(parse_file_metadata.HEADER_LENGTH)
+
+    # Convert from created string to PMT dict
+    try:
+        header = pmt.deserialize_str(header_str)
+    except RuntimeError:
+        sys.stderr.write("[x] Could not deserialize header: file may be invalid or corrupt\n")
+        sys.exit(2)
+
+    # Convert from PMT dict to Python dict
+    info = parse_file_metadata.parse_header(header)
+
+    # Extra header info
+    if(info["extra_len"] > 0):
+        extra_str = file.read(info["extra_len"])
+
+    try:
+        extra = pmt.deserialize_str(extra_str)
+    except RuntimeError:
+        sys.stderr.write("[x] Could not deserialize extra headers: invalid or corrupt data file.\n")
+        sys.exit(2)
+
+    info = parse_file_metadata.parse_extra_dict(extra, info)
+
+    return info
 
 
 ## Main parent function
 def main():
 
-    # TODO: temp values for the header fields
-    rx_time     = 1
-    sampleRate  = 10000
-    radio       = 1
+    ## Open the binary file
+    inputFile = open(BINNAME, "rb")
+
+    ## Loop control variables
+    isComplete = False
+    headerNum = 0
 
     ## Main loop: 
     # 1. Read GNURadio output file
@@ -48,18 +80,34 @@ def main():
     # 3. Encode payload
     # 4. Create JSON
     # 5. Send JSON with HTTP POST
-    while(rx_time < 5):
+    while(not isComplete): # Loop until all headers and subsequent data is read
 
-        ## Read in bin file (in demo the headers will be prompted for user input)
-        # TODO: replace this with proper header parsing from bin file
+        ## Read in bin file to parse header metadata
+        # NOTE: for now we just read in one segment of data
+        headerData = parseHeaders(inputFile)
+        headerNum += 1
+        print(f"Header Number: {headerNum}")
+
+        # Size of each data segment
+        ITEM_SIZE   = headerData["nitems"]
+        SEG_SIZE    = headerData["nbytes"]
+
+        # Check if we read the final header
+        if ITEM_SIZE < NITEMS:
+            isComplete = True
+
+        # Pull out relevant header info
+        rx_time     = headerData["rx_time"]
+        rx_rate     = headerData["rx_rate"]
+        num_samples = headerData["nitems"]
+        radio       = 1
 
         ## Encode data payload from bin file into base64 ascii characters
-        inputFile   = open(BINNAME, "rb")
-        inputBinary = inputFile.read()
+        inputBinary = inputFile.read(SEG_SIZE)
         encodedData = (base64.b64encode(inputBinary)).decode('ascii')
 
         ## Create JSON file using encoded payload and header metadata
-        jsonFormat = {"metadata":[{"rx_time" : rx_time, "rx_sample" : sampleRate, "radio_num" : radio}], "payload" : encodedData}
+        jsonFormat = {"metadata":[{"rx_time" : rx_time, "rx_sample" : rx_rate, "num_samples" : num_samples, "radio_num" : radio}], "payload" : encodedData}
         jsonFile = json.dumps(jsonFormat, indent=4)
 
         ## Send this JSON file to the WebServer with an HTTP POST
@@ -70,7 +118,7 @@ def main():
         rx_time = rx_time + 5   # temporary time header increment
         
         # Wait to send next file (TODO: does this program need to do anything else in the meanwhile?)
-        print("[+] Sleeping for 5 seconds")
+        print("[+] Sleeping for 5 seconds\n")
         time.sleep(5) # TODO: sleep interval related to GNURadio file creation
 
 if __name__ == "__main__":
