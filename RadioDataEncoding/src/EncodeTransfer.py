@@ -12,7 +12,7 @@ import time     # Program sleep
 from gnuradio.blocks import parse_file_metadata # GNURadio header parsing
 
 ## Constants
-HOST        = "http://spectrumobservatory.wpi.edu:5000/data"               # host of webserver
+HOST        = "http://spectrumobservatory.wpi.edu:5000/data1"               # host of webserver
 BINNAME     = "sample_header.dat"                                          # name of the input file
 HEADERS     = {'Content-type': 'application/json', 'Accept': 'text/plain'} # Headers for POST request
 NITEMS      = 1000000                                                      # Number of samples per header (match to GNURadio)
