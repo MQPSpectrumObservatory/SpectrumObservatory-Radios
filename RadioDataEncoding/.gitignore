@@ -2,8 +2,9 @@
 __pycache__/
 
 # System Files
-WSDaemon.log
-WSDaemon.pid
+RadioDaemon.log
+RadioDaemon.pid
 
 # Specific Test Files
 src/sample.json
+src/sample.dat
