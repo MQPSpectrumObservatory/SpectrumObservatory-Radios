@@ -20,7 +20,9 @@ from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
 from gnuradio import gr, blocks
 from gnuradio import uhd
+import threading
 import time
+import requests
 import pmt
 
 class top_block(gr.top_block):
@@ -82,6 +84,18 @@ class top_block(gr.top_block):
         self.mqp_get = mqp_get
         self.uhd_usrp_source_0.set_center_freq(self.mqp_get, 0)
 
+    def MQP_HTTP_Parser(self):
+        while True:
+            freq1 = (requests.get('http://spectrumobservatory.wpi.edu:5000/freq1')).status_code
+            self.set_mqp_get(freq1)
+            print('Did it work? ', freq1)
+            time.sleep(5)
+
+    def startThread(self):
+        self.t1 = threading.Thread(target = self.MQP_HTTP_Parser)
+        self.t1.daemon = True
+        self.t1.start()
+
 
 ## NOTE: GNURadio generated main function not used
 def main(top_block_cls=top_block, options=None):
@@ -97,6 +111,7 @@ def main(top_block_cls=top_block, options=None):
     signal.signal(signal.SIGTERM, sig_handler)
 
     tb.start()
+    tb.startThread()
     
     try:
         input('Press Enter to quit: ')

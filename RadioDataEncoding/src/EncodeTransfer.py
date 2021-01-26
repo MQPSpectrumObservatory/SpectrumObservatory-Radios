@@ -18,7 +18,7 @@ HEADERS     = {'Content-type': 'application/json', 'Accept': 'text/plain'}  # He
 NITEMS      = 300000                                                        # Number of samples per header (match to GNURadio)
 
 # Test Constants -> (can be used to test locally)
-TEST = 1
+TEST = 0
 if(TEST):
     HOST = 'http://localhost:3000/data'
     BINNAME = 'sample.dat'

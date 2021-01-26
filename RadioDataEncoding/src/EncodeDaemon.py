@@ -17,7 +17,7 @@ from EncodeTransfer import (
 
 
 ## Constants
-WORKDIR = '/home/jrmurphy/dev/MQP/SpectrumObservatory-Radios/RadioDataEncoding/src'
+WORKDIR = '/home/radios/SpectrumObservatory_Radios/RadioDataEncoding/src'
 LOG = WORKDIR + '/RadioDaemon.log'
 PID = WORKDIR + '/RadioDaemon.pid'
 
@@ -32,6 +32,7 @@ class GNURadioJob(threading.Thread):
     def run(self):
         tb = top_block()
         tb.start()
+        tb.startThread()
 
         # Spin until shutdown is signaled
         while not self.shutdown_flag.is_set():
