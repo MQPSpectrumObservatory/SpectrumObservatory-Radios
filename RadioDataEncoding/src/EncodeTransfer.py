@@ -100,7 +100,7 @@ def main():
         encodedData = (base64.b64encode(inputBinary)).decode('ascii')
 
         # Create JSON file using encoded payload and header metadata
-        jsonFormat = {"metadata":[{"rx_time" : rx_time, "rx_sample" : rx_rate, "num_samples" : num_samples, "radio_num" : radio}], "payload" : encodedData}
+        jsonFormat = {"metadata":{"rx_time" : rx_time, "rx_sample" : rx_rate, "num_samples" : num_samples, "radio_num" : radio}, "payload" : encodedData}
         jsonFile = json.dumps(jsonFormat, indent=4)
 
         # Send this JSON file to the WebServer with an HTTP POST
