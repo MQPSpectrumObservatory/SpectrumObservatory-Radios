@@ -17,7 +17,7 @@ from EncodeTransfer import (
 
 
 ## Constants
-WORKDIR = '/home/radios/SpectrumObservatory_Radios/RadioDataEncoding/src'
+WORKDIR = '/home/radios/SpectrumObservatory-Radios/RadioDataEncoding/src'
 LOG = WORKDIR + '/RadioDaemon.log'
 PID = WORKDIR + '/RadioDaemon.pid'
 
@@ -30,6 +30,7 @@ class GNURadioJob(threading.Thread):
         self.shutdown_flag = threading.Event()
 
     def run(self):
+        # Startup Code
         tb = top_block()
         tb.start()
         tb.startThread()
@@ -38,8 +39,10 @@ class GNURadioJob(threading.Thread):
         while not self.shutdown_flag.is_set():
             time.sleep(0.5)
 
+        # Shutdown Code
         tb.stop()
         tb.wait()
+        print("[o] GNURadio Shutdown\n")
 
 
 ## Encode and Transfer script job class
@@ -50,12 +53,16 @@ class EncodeTransferJob(threading.Thread):
         self.shutdown_flag = threading.Event()
 
     def run(self):
+        # Startup Code
         EncodeMain()
 
         # Spin until shutdown is signaled
         while not self.shutdown_flag.is_set():
             time.sleep(0.5)
 
+        # Shutdown Code
+        # NOTE: transfer script handles its own termination
+        
 
 ## Declare our custom exception
 class ServiceExit(Exception):

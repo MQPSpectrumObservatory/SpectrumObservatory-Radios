@@ -20,8 +20,18 @@ NITEMS      = 300000                                                        # Nu
 # Test Constants -> (can be used to test locally)
 TEST = 0
 if(TEST):
-    HOST = 'http://localhost:3000/data'
+    HOST = 'http://localhost:5000/data1'
     BINNAME = 'sample.dat'
+
+
+## Called when the transfer program determines there is no more data to transfer
+# Cleans up open files, removes temporary files and exits (termianting the thread)
+def term(file):
+    ## Remaining cleanup
+    print("[o] Program terminating\n")
+    file.close()
+    os.remove("sample.dat")
+    sys.exit(0)
 
 
 ## This will be called to parse header data out of the dat file
@@ -36,8 +46,8 @@ def parseHeaders(file):
     try:
         header = pmt.deserialize_str(header_str)
     except RuntimeError:
-        sys.stderr.write("[x] Could not deserialize header: file may be invalid or corrupt\n")
-        sys.exit(2)
+        sys.stderr.write("[x] Could not deserialize header\n")
+        term(file)
 
     # Convert from PMT dict to Python dict
     info = parse_file_metadata.parse_header(header)
@@ -49,8 +59,8 @@ def parseHeaders(file):
     try:
         extra = pmt.deserialize_str(extra_str)
     except RuntimeError:
-        sys.stderr.write("[x] Could not deserialize extra headers: invalid or corrupt data file.\n")
-        sys.exit(2)
+        sys.stderr.write("[x] Could not deserialize extra headers\n")
+        term(file)
 
     info = parse_file_metadata.parse_extra_dict(extra, info)
 
@@ -85,9 +95,12 @@ def main():
         ITEM_SIZE   = headerData["nitems"]
         SEG_SIZE    = headerData["nbytes"]
 
-        # Check if we read the final header in the file (if there are less samples than expected for a full segment)
+        # Check if sample is too small (GET request does not allow for GNURadio to complete a full 300000 samples in a second)
+        # We skip this set (drop about 2000 samples or about 6ms)
         if ITEM_SIZE < NITEMS:
-            isComplete = True
+            inputFile.read(SEG_SIZE)
+            print("[x] Segment too small, skipping\n")
+            continue
 
         # Pull out relevant header info
         rx_time     = headerData["rx_time"]
@@ -111,11 +124,6 @@ def main():
         print("[+] Sleeping for 1 seconds\n")
         time.sleep(1)
 
-
-    ## Any remaining cleanup
-    print("[o] Sent all data, cleaning up\n")
-    inputFile.close()
-    os.remove("sample.dat")
 
 if __name__ == "__main__":
     main()

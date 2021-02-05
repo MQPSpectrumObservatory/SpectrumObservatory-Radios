@@ -87,8 +87,8 @@ class top_block(gr.top_block):
     def MQP_HTTP_Parser(self):
         while True:
             freq1 = int((requests.get('http://spectrumobservatory.wpi.edu:5000/freq1')).content)
-            self.set_mqp_get(freq1)
-            print('Did it work? ', freq1)
+            if(freq1 != self.get_mqp_get): # Only set frequency if it is different (save on overhead)
+                self.set_mqp_get(freq1)
             time.sleep(5)
 
     def startThread(self):
