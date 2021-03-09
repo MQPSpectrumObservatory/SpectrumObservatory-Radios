@@ -8,3 +8,5 @@ RadioDaemon.pid
 # Specific Test Files
 src/sample.json
 src/sample.dat
+src/sample1.dat
+src/sample2.dat
