@@ -27,14 +27,21 @@ import pmt
 
 class top_block(gr.top_block):
 
-    def __init__(self):
+    def __init__(self, radioNum):
         gr.top_block.__init__(self, "Spectrum Analyzer")
 
         ##################################################
         # Variables
         ##################################################
         self.samp_rate = samp_rate = int(300e3)
-        self.mqp_get = mqp_get = 900e6
+        self.center_freq = center_freq = 900e6
+        self.radio_num = radioNum
+
+        # Create custom PMT metadata containing the assigned radio number
+        key0 = pmt.intern("radio_num")
+        val0 = pmt.from_long(self.radio_num)
+        extra_meta = pmt.make_dict()
+        extra_meta = pmt.dict_add(extra_meta, key0, val0)
 
         ##################################################
         # Blocks
@@ -47,7 +54,7 @@ class top_block(gr.top_block):
                 channels=list(range(0,1)),
             ),
         )
-        self.uhd_usrp_source_0.set_center_freq(mqp_get, 0)
+        self.uhd_usrp_source_0.set_center_freq(center_freq, 0)
         self.uhd_usrp_source_0.set_gain(28, 0)
         self.uhd_usrp_source_0.set_antenna('RX2', 0)
         self.uhd_usrp_source_0.set_bandwidth(samp_rate, 0)
@@ -56,7 +63,7 @@ class top_block(gr.top_block):
         self.fft_vxx_0 = fft.fft_vcc(1024, True, window.blackmanharris(1024), True, 1)
         self.blocks_vector_to_stream_0 = blocks.vector_to_stream(gr.sizeof_gr_complex*1, 1024)
         self.blocks_stream_to_vector_0 = blocks.stream_to_vector(gr.sizeof_gr_complex*1, 1024)
-        self.blocks_file_meta_sink_0 = blocks.file_meta_sink(gr.sizeof_gr_complex*1, './sample.dat', samp_rate, 1, blocks.GR_FILE_FLOAT, True, 300000, pmt.make_dict(), False)
+        self.blocks_file_meta_sink_0 = blocks.file_meta_sink(gr.sizeof_gr_complex*1, f'./sample{self.radio_num}.dat', samp_rate, 1, blocks.GR_FILE_FLOAT, True, 300000, extra_meta, False)
         self.blocks_file_meta_sink_0.set_unbuffered(False)
 
 
@@ -77,18 +84,18 @@ class top_block(gr.top_block):
         self.uhd_usrp_source_0.set_samp_rate(self.samp_rate)
         self.uhd_usrp_source_0.set_bandwidth(self.samp_rate, 0)
 
-    def get_mqp_get(self):
-        return self.mqp_get
+    def get_center_freq(self):
+        return self.center_freq
 
-    def set_mqp_get(self, mqp_get):
-        self.mqp_get = mqp_get
-        self.uhd_usrp_source_0.set_center_freq(self.mqp_get, 0)
+    def set_center_freq(self, freq):
+        self.center_freq = freq
+        self.uhd_usrp_source_0.set_center_freq(self.center_freq, 0)
 
     def MQP_HTTP_Parser(self):
         while True:
-            freq1 = int((requests.get('http://spectrumobservatory.wpi.edu:5000/freq1')).content)
-            if(freq1 != self.get_mqp_get): # Only set frequency if it is different (save on overhead)
-                self.set_mqp_get(freq1)
+            freq1 = int((requests.get(f'http://localhost:5000/freq{self.radio_num}')).content)
+            if(freq1 != self.get_center_freq): # Only set frequency if it is different (save on overhead)
+                self.set_center_freq(freq1)
             time.sleep(5)
 
     def startThread(self):
