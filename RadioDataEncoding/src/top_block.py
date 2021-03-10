@@ -93,7 +93,7 @@ class top_block(gr.top_block):
 
     def MQP_HTTP_Parser(self):
         while True:
-            freq1 = int((requests.get(f'http://localhost:5000/freq{self.radio_num}')).content)
+            freq1 = int((requests.get(f'http://spectrumobservatory.wpi.edu/freq{self.radio_num}')).content)
             if(freq1 != self.get_center_freq): # Only set frequency if it is different (save on overhead)
                 self.set_center_freq(freq1)
             time.sleep(5)

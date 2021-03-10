@@ -26,7 +26,7 @@ class Daemon:
             sys.exit(1)
 
         # Decouple from parent environment
-        # NOTE: we do not change the working directory
+        # NOTE: we do not change the working directory (current working directory is not at risk of being unmounted)
         os.setsid()
         os.umask(0)
 
@@ -40,7 +40,7 @@ class Daemon:
             logging.critical('Fork #2 failed: {0}\n'.format(err))
             sys.exit(1)
 
-        # Redirect standard file descriptors
+        # Redirect standard file descriptors into /dev/null
         sys.stdout.flush()
         sys.stderr.flush()
         si = open(os.devnull, 'r')

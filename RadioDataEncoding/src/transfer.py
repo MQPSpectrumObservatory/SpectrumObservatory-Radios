@@ -15,7 +15,7 @@ from gnuradio.blocks import parse_file_metadata # GNU Radio header parsing
 class Transfer:
     def __init__(self, radioNum):
         self.radioNum = radioNum
-        self.HOST = "http://localhost:5000/data"                                    # host of webserver
+        self.HOST = "http://spectrumobservatory.wpi.edu/data"                       # host of webserver
         self.BINNAME = "sample.dat"                                                 # name of the input file (gets overriden on init)
         self.HEADERS = {'Content-type': 'application/json', 'Accept': 'text/plain'} # Headers for POST request
         self.NITEMS = 300000
